@@ -161,3 +161,4 @@ p20
 # Local-only: research papers and internal docs (not for publication)
 papers/
 documentation/
+resources/**
