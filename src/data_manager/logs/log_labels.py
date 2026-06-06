@@ -30,7 +30,7 @@ class LogLevel(IntEnum):
     FINEST = 1
 
     INFO = 2
-    I = 2
+    I = 2  # noqa: E741
     NOTICE = 2
 
     WARN = 3

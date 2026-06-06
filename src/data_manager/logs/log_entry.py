@@ -99,7 +99,7 @@ class LogEntry:
     message: str = field(init=False, default="")
 
     def __post_init__(self) -> None:
-        """Extract raw_line/timestamp/metadata from JSON dict, then parse the line."""
+        """Build from a JSON dict: extract fields, then parse the line."""
         if self.raw_json_dict is not None:
             self.raw_line = self.raw_json_dict.get("line", "")
             self.log_timestamp = self.raw_json_dict.get("timestamp", "")

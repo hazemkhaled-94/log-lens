@@ -1,7 +1,7 @@
 """3D scatter-plot visualizer for GMM-clustered log embeddings."""
 
 import logging
-from typing import List, Optional, cast
+from typing import cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,7 +17,7 @@ class ClusterVisualizer:
         self,
         coords: np.ndarray,
         labels: np.ndarray,
-        cluster_names: Optional[List[str]] = None,
+        cluster_names: list[str] | None = None,
         save_path: str = "gmm_plot_3d.png",
         show: bool = False,
     ) -> None:
@@ -41,7 +41,7 @@ class ClusterVisualizer:
         logger.info("Initializing 3D GMM density plot...")
 
         fig = plt.figure(figsize=(12, 10))
-        ax = cast(Axes3D, fig.add_subplot(111, projection="3d"))  # cast for type checkers
+        ax = cast(Axes3D, fig.add_subplot(111, projection="3d"))
 
         scatter = ax.scatter(
             coords[:, 0],

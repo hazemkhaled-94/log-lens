@@ -4,13 +4,14 @@ Tools for making sense of infrastructure logs. It masks noisy log lines with
 Drain3, fine-tunes a transformer to predict log severity, serves predictions
 over a FastAPI endpoint, and flags entries whose predicted severity disagrees
 with the reported one as possible anomalies. There's also a clustering module
-for unsupervised exploration.
+that groups the masked logs in the trained model's own embedding space — a way
+to inspect what the classifier sees.
 
 ## Layout
 
 - `src/api` — FastAPI service and model loading.
 - `src/classifier` — training, inference, anomaly scoring, evaluation.
-- `src/clusterer` — embeddings, GMM clustering, plotting.
+- `src/clusterer` — ModernBERT embeddings, GMM clustering, plotting.
 - `src/data_manager/logs` — log parsing and dataset building.
 - `src/data_manager/masker` — Drain3 masking and templates.
 

@@ -9,7 +9,7 @@ from typing import Union
 
 from data_manager.logs.log_entry import LogEntry
 from data_manager.logs.log_file import LogFile
-from data_manager.masker.config import Drain3Config
+from configs import Drain3Config
 from data_manager.masker.parser import Drain3Parser
 from data_manager.masker.template_results import TestResult, TrainResult
 
@@ -36,6 +36,10 @@ class Drain3Pipeline:
     def test(self, entry: _EntryLike) -> TestResult:
         """Test a single log entry against the frozen parse tree."""
         return self._parser.match(self._to_message(entry))
+
+    def mask(self, entry: _EntryLike) -> str:
+        """Return the masked form of an entry (the text the model sees)."""
+        return self.test(entry).masked_message
 
     def train_batch(
         self, entries: list[_EntryLike]

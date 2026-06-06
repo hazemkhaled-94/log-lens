@@ -50,6 +50,7 @@ class InferenceService:
     def __init__(self, runtime: RuntimeComponents) -> None:
         self._predictor = runtime.predictor
         self._mismatch_scorer = runtime.mismatch_scorer
+        self._masker = runtime.masker
         self._batch_size = runtime.batch_size
 
     def process_one(self, request: LogRequest) -> PredictionResponse:
@@ -70,6 +71,8 @@ class InferenceService:
         entries = [
             LogEntry(raw_json_dict=req.model_dump()) for req in requests
         ]
+        for entry in entries:
+            entry.message = self._masker.mask(entry.message)
 
         labels, confidence_intervals = self._predictor.predict_batch(
             entries,

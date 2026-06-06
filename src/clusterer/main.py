@@ -13,7 +13,9 @@ from clusterer.embedder import LogEmbedder
 from clusterer.engine import LogEngine
 from clusterer.evaluator import ClusterEvaluator
 from clusterer.visualizer import ClusterVisualizer
+from configs import INFERENCE_OUTPUT_DIR
 from data_manager.logs.log_file import LogFile
+from data_manager.masker.pipeline import Drain3Pipeline
 
 load_dotenv()
 
@@ -43,8 +45,13 @@ def _resolve_data_dir() -> Path:
 def _collect_embeddings(
     data_dir: Path,
     embedder: LogEmbedder,
+    masker: Drain3Pipeline,
 ) -> tuple[list[np.ndarray], list[str], list[str]]:
-    """Embed all log files in ``data_dir`` and return batches, levels, messages."""
+    """Embed all log files in ``data_dir``; return batches/levels/msgs.
+
+    Messages are Drain3-masked first — the same preprocessing the
+    classifier applies — so the clusters reflect what the model sees.
+    """
     all_embeddings_list: list[np.ndarray] = []
     all_true_levels: list[str] = []
     all_messages: list[str] = []
@@ -62,10 +69,11 @@ def _collect_embeddings(
         if not clean_msgs:
             continue
 
-        file_embeddings = embedder.embed_logs(clean_msgs)
+        masked_msgs = [masker.mask(msg) for msg in clean_msgs]
+        file_embeddings = embedder.embed_logs(masked_msgs)
         all_embeddings_list.append(file_embeddings)
         all_true_levels.extend(true_levels)
-        all_messages.extend(clean_msgs)
+        all_messages.extend(masked_msgs)
 
         del log_collection
         del clean_msgs
@@ -83,8 +91,12 @@ def main() -> None:
         logger.error(f"Dataset directory not found: {data_dir}")
         sys.exit(1)
 
+    output_dir = Path(INFERENCE_OUTPUT_DIR) / "clusterer"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     logger.info("Initializing models...")
     embedder = LogEmbedder()
+    masker = Drain3Pipeline()
     clusterer = LogEngine()
     visualizer = ClusterVisualizer()
     evaluator = ClusterEvaluator()
@@ -92,6 +104,7 @@ def main() -> None:
     all_embeddings_list, all_true_levels, all_messages = _collect_embeddings(
         data_dir=data_dir,
         embedder=embedder,
+        masker=masker,
     )
 
     if not all_embeddings_list:
@@ -109,14 +122,19 @@ def main() -> None:
     labels = clusterer.cluster(reduced_dims_embeddings)
 
     logger.info("Evaluating clusters...")
-    evaluator.evaluate(all_messages, all_true_levels, labels)
+    evaluator.evaluate(
+        all_messages, all_true_levels, labels, report_dir=str(output_dir)
+    )
 
     logger.info("Reducing dimensions to 3 for plotting...")
     reduced_dims_plotting = clusterer.reduce_dims(embeddings, n_dims=3)
 
     logger.info("Generating 3D plot...")
     visualizer.plot_gmm_clusters_3d(
-        reduced_dims_plotting, labels, show=True
+        reduced_dims_plotting,
+        labels,
+        save_path=str(output_dir / "gmm_plot_3d.png"),
+        show=True,
     )
 
 

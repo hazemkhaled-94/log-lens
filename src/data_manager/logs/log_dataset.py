@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 from datasets import ClassLabel, Dataset, DatasetDict  # type: ignore
 
-from classifier.utils.config import RANDOM_STATE
+from configs import RANDOM_STATE
 from data_manager.logs.log_labels import LogLevel
 
 # Both stratified splits (80/20, then 50/50 on the 20%) need each
@@ -61,7 +61,7 @@ class LogDatasetBuilder:
             from pathlib import Path
             from data_manager.logs.log_file import LogFile
             from data_manager.logs.log_labels import LogLevel
-            from data_manager.masker.config import Drain3Config
+            from configs import Drain3Config
             from data_manager.masker.pipeline import Drain3Pipeline
 
             iterator = LogFile.yield_from_directory(Path(directory_path))
@@ -77,7 +77,7 @@ class LogDatasetBuilder:
 
                 lvl = entry.line_level.upper()
 
-                entry.message = pipeline.test(entry.message).masked_message
+                entry.message = pipeline.mask(entry.message)
 
                 try:
                     numeric_label = LogLevel[lvl].value

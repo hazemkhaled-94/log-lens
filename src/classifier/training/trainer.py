@@ -58,7 +58,7 @@ class UnfreezeCallback(TrainerCallback):
 
 
 class WeightedLossTrainer(Trainer):
-    """Custom trainer supporting weighted cross-entropy and generalized cross-entropy."""
+    """Trainer supporting weighted and generalized cross-entropy."""
 
     def __init__(
         self,
@@ -123,7 +123,7 @@ class WeightedLossTrainer(Trainer):
         logits: torch.Tensor,
         labels: torch.Tensor,
     ) -> torch.Tensor:
-        """Compute generalized cross-entropy loss with optional class weights."""
+        """Compute generalized cross-entropy with optional class weights."""
         probs = torch.softmax(logits, dim=-1)
         target_probs = probs.gather(
             dim=-1,
@@ -164,7 +164,7 @@ class WeightedLossTrainer(Trainer):
         return (loss, outputs) if return_outputs else loss
 
     def create_optimizer(self, model=None):
-        """Build AdamW optimizer with separate LRs for classifier head and backbone."""
+        """Build AdamW with separate LRs for the head and backbone."""
 
         if self.optimizer is not None:
             return self.optimizer
@@ -297,7 +297,7 @@ class LogModelTrainer:
         self,
         train_labels: list[int],
     ) -> list[float]:
-        """Compute balanced inverse-frequency class weights from training labels."""
+        """Compute balanced inverse-frequency class weights from labels."""
         num_labels = int(self.model.config.num_labels)
         label_ids = np.asarray(train_labels, dtype=np.int64)
         label_counts = np.bincount(

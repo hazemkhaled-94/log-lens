@@ -19,6 +19,7 @@ from sklearn.metrics import (  # type: ignore
     roc_auc_score,
 )
 
+from configs import INFERENCE_OUTPUT_DIR
 from classifier.anomaly.calibration import PercentileThresholdCalibrator
 from classifier.anomaly.scorer import (
     SeverityMismatchResult,
@@ -170,7 +171,7 @@ class ModelEvaluator:
             self._teardown_run_artifacts()
 
     def _init_run_artifacts(self) -> None:
-        """Stamp this run with a unique id and attach a per-run log file handler."""
+        """Stamp the run with a unique id and attach a per-run log handler."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.run_id = f"{self.model_path.name}_{timestamp}"
 
@@ -563,14 +564,14 @@ class ModelEvaluator:
         logger.info("="*70)
 
     def _default_export_dir(self) -> Path:
-        """Per-model output directory under ``logs/`` to avoid collisions between runs."""
-        return Path("logs") / self.model_path.name
+        """Per-model output dir under the inference output dir."""
+        return Path(INFERENCE_OUTPUT_DIR) / self.model_path.name
 
     def _export_auto_labeled_logs(
         self,
         output_file: Optional[str] = None,
     ) -> None:
-        """Export pseudo-labeled UNKNOWN logs to a JSON file for future training."""
+        """Export pseudo-labeled UNKNOWN logs to JSON for future training."""
         if output_file is None:
             output_file = str(
                 self._default_export_dir()
@@ -606,7 +607,7 @@ class ModelEvaluator:
 
         Args:
             output_file: Target JSON path for exported misclassifications.
-                Defaults to ``logs/<model_name>/incorrect_predictions.json``.
+                Defaults to ``output/<model_name>/incorrect_predictions.json``.
         """
         if output_file is None:
             output_file = str(

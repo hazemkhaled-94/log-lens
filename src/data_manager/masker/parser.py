@@ -7,7 +7,7 @@
 from drain3 import TemplateMiner  # type: ignore
 from drain3.file_persistence import FilePersistence  # type: ignore
 
-from data_manager.masker.config import Drain3Config
+from configs import Drain3Config
 from data_manager.masker.template_results import TestResult, TrainResult
 
 

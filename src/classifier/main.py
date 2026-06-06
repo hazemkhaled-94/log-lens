@@ -41,7 +41,6 @@ def load_pipeline_paths() -> PipelinePaths:
     )
 
 
-
 def run_training(args: argparse.Namespace) -> None:
     """Orchestrate data preparation and model training."""
 
@@ -105,10 +104,13 @@ def run_inference(args: argparse.Namespace) -> None:
 
     from classifier.inference.inference import LogLevelPredictor
     from data_manager.logs.log_entry import LogEntry
+    from data_manager.masker.pipeline import Drain3Pipeline
 
     logger.info("=== Starting Inference ===")
     paths: PipelinePaths = args.paths
     entry = LogEntry(raw_json_dict={"line": args.text})
+    # Mask like the training pipeline so the model sees the same form.
+    entry.message = Drain3Pipeline().mask(entry.message)
     LogLevelPredictor(
         model_path=paths.model_dir
     ).predict(entry=entry, verbose=True)
@@ -118,7 +120,7 @@ def run_evaluation(args: argparse.Namespace) -> None:
     """Run mass evaluation of one or more models on test data.
 
     When ``--model-dir`` is repeated, each model is evaluated against the
-    same test corpus with outputs namespaced under ``logs/<model_name>/``.
+    same test corpus with outputs namespaced under ``output/<model_name>/``.
     Without the flag, falls back to the ``MODEL_DIR`` env var.
     """
 
@@ -203,7 +205,7 @@ def main() -> None:
             "evaluate several models sequentially against the same "
             "TEST_DATA_DIR. When omitted, the MODEL_DIR env var is "
             "used. Per-model outputs are namespaced under "
-            "logs/<model_name>/."
+            "output/<model_name>/."
         ),
     )
     eval_p.set_defaults(func=run_evaluation)

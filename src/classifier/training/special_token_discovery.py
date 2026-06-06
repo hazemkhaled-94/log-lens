@@ -19,7 +19,7 @@ class RegexSpecialTokenDiscoverer:
     """Extract placeholder-like tokens using a configurable regex pattern."""
 
     def __init__(self, pattern: str = r"<[^<>\s]+>") -> None:
-        """Compile the regex pattern used to discover placeholder-like tokens."""
+        """Compile the regex used to find placeholder-like tokens."""
         self._pattern = re.compile(pattern)
 
     def discover(self, datasets: Any) -> list[str]:

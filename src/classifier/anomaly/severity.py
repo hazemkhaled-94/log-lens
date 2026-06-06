@@ -71,7 +71,7 @@ class SeverityScale:
         return self.rank(severity) >= self.rank("ERROR")
 
     def is_critical_miss(self, observed: str, predicted: str) -> bool:
-        """Return True when an ERROR/FATAL event is predicted at a lower severity."""
+        """True when an ERROR/FATAL event is predicted at a lower severity."""
         if not self.is_critical(observed):
             return False
         return self.rank(predicted) < self.rank(observed)

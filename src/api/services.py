@@ -13,6 +13,7 @@ from fastapi import FastAPI
 
 from classifier.anomaly.scorer import SeverityMismatchScorer
 from classifier.inference.inference import LogLevelPredictor
+from data_manager.masker.pipeline import Drain3Pipeline
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -30,12 +31,15 @@ class ModelContainer:
 
     predictor: LogLevelPredictor | None = None
     mismatch_scorer: SeverityMismatchScorer | None = None
+    masker: Drain3Pipeline | None = None
     inference_batch_size: int = 64
     model_path: str = ""
 
     @staticmethod
     def _read_float_env(name: str, default: float) -> float:
-        """Read a float env var, returning ``default`` on missing or invalid value."""
+        """
+        Read a float env var; return ``default`` if missing/invalid.
+        """
         value = os.getenv(name)
         if value is None:
             return default
@@ -46,7 +50,9 @@ class ModelContainer:
 
     @staticmethod
     def _read_int_env(name: str, default: int) -> int:
-        """Read an int env var, returning ``default`` on missing or invalid value."""
+        """
+        Read an int env var; return ``default`` if missing/invalid.
+        """
         value = os.getenv(name)
         if value is None:
             return default
@@ -57,7 +63,9 @@ class ModelContainer:
 
     @staticmethod
     def _build_mismatch_scorer() -> SeverityMismatchScorer:
-        """Build a SeverityMismatchScorer from environment configuration."""
+        """
+        Build a SeverityMismatchScorer from environment configuration.
+        """
         threshold = ModelContainer._read_float_env(
             "ANOMALY_SCORE_THRESHOLD", 20.0
         )
@@ -83,6 +91,8 @@ class ModelContainer:
             cls.predictor = LogLevelPredictor(Path(model_path))
         if cls.mismatch_scorer is None:
             cls.mismatch_scorer = cls._build_mismatch_scorer()
+        if cls.masker is None:
+            cls.masker = Drain3Pipeline()
         cls.inference_batch_size = cls._read_int_env(
             "INFERENCE_BATCH_SIZE", 64
         )
@@ -99,9 +109,12 @@ class ModelContainer:
             raise RuntimeError("Model predictor is not initialized.")
         if cls.mismatch_scorer is None:
             raise RuntimeError("Mismatch scorer is not initialized.")
+        if cls.masker is None:
+            raise RuntimeError("Masker is not initialized.")
         return RuntimeComponents(
             predictor=cls.predictor,
             mismatch_scorer=cls.mismatch_scorer,
+            masker=cls.masker,
             batch_size=cls.inference_batch_size,
         )
 
@@ -111,6 +124,7 @@ class ModelContainer:
         return {
             "predictor_loaded": cls.predictor is not None,
             "mismatch_scorer_loaded": cls.mismatch_scorer is not None,
+            "masker_loaded": cls.masker is not None,
             "model_path": cls.model_path,
             "inference_batch_size": cls.inference_batch_size,
             "anomaly_threshold": (
@@ -136,6 +150,7 @@ class RuntimeComponents(NamedTuple):
 
     predictor: LogLevelPredictor
     mismatch_scorer: SeverityMismatchScorer
+    masker: Drain3Pipeline
     batch_size: int
 
 
@@ -149,3 +164,4 @@ async def lifespan(app: FastAPI):
 
     ModelContainer.predictor = None
     ModelContainer.mismatch_scorer = None
+    ModelContainer.masker = None

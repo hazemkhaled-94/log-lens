@@ -19,17 +19,17 @@ class ClusterEvaluator:
         cluster_labels: np.ndarray,
         report_dir: str = "data",
     ) -> None:
-        """Log per-cluster purity stats and write anomalies to a report file."""
+        """Log per-cluster purity stats and write outliers to a report file."""
         report_path = Path(report_dir)
         report_path.mkdir(parents=True, exist_ok=True)
-        file_path = report_path / "anomalies_report.txt"
+        file_path = report_path / "outliers_report.txt"
 
         logger.info("\n" + "=" * 50)
         logger.info("                 CLUSTER EVALUATION")
         logger.info("=" * 50)
 
         unique_clusters = np.unique(cluster_labels)
-        all_mismatches = []
+        all_outliers = []
 
         for cluster_id in unique_clusters:
             indices = np.where(cluster_labels == cluster_id)[0]
@@ -60,24 +60,24 @@ class ClusterEvaluator:
             for level, count in counts.items():
                 logger.info(f"  -> Contains {count} '{level}' logs")
 
-            mismatches = [
+            outliers = [
                 f"[Cluster {cluster_id}] Tagged as "
                 f"[{levels_in_cluster[i]}]: {msgs_in_cluster[i]}"
                 for i in range(total)
                 if levels_in_cluster[i] != majority_label
             ]
 
-            if mismatches:
-                logger.info(f"  [!] Found {len(mismatches)} anomalies.")
-                all_mismatches.extend(mismatches)
+            if outliers:
+                logger.info(f"  [!] Found {len(outliers)} outliers.")
+                all_outliers.extend(outliers)
 
         logger.info("\n" + "=" * 50)
 
-        if all_mismatches:
-            file_path.write_text("\n".join(all_mismatches), encoding="utf-8")
+        if all_outliers:
+            file_path.write_text("\n".join(all_outliers), encoding="utf-8")
             logger.info(
-                f"-> Full anomaly report saved to: "
+                f"-> Full outlier report saved to: "
                 f"{file_path.resolve()}\n"
             )
         else:
-            logger.info("-> Perfect clustering! No anomalies found.\n")
+            logger.info("-> Perfect clustering! No outliers found.\n")

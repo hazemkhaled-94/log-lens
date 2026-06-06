@@ -51,7 +51,7 @@ class LogTokenizer:
         self,
         datasets: Any
     ) -> Any:
-        """Tokenize all splits, discover special tokens, and drop the raw text column.
+        """Tokenize splits, discover special tokens, drop the raw text column.
 
         Args:
             datasets: DatasetDict containing train/val/test splits.
@@ -102,7 +102,7 @@ class LogTokenizer:
         return encoded
 
     def _register_special_tokens(self, tokens: list[str]) -> int:
-        """Register newly discovered placeholder tokens in the tokenizer vocabulary."""
+        """Register newly discovered placeholder tokens in the vocabulary."""
         existing_tokens = set(self.tokenizer.all_special_tokens)
         new_tokens = [tok for tok in tokens if tok not in existing_tokens]
 

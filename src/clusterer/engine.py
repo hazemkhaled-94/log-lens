@@ -3,13 +3,12 @@
 import logging
 
 import numpy as np
-from sklearn.cluster import KMeans  # type: ignore[import-untyped]
 from sklearn.decomposition import PCA  # type: ignore[import-untyped]
 from sklearn.mixture import (  # type: ignore[import-untyped]
     BayesianGaussianMixture as GaussianMixture,
 )
 
-from classifier.utils.config import N_CLUSTERS, RANDOM_STATE
+from configs import N_CLUSTERS, RANDOM_STATE
 
 logger = logging.getLogger(__name__)
 
@@ -18,14 +17,11 @@ class LogEngine:
     """Engine for clustering and dimensionality reduction of log embeddings."""
 
     def __init__(self) -> None:
-        """Initialize K-means, Bayesian GMM, and a lazy PCA reducer."""
-        self.kmeans = KMeans(
-            n_clusters=N_CLUSTERS,
-            random_state=RANDOM_STATE,
-            n_init="auto",
-            init="k-means++",
-        )
+        """Initialize the Bayesian GMM and a lazy PCA reducer.
 
+        Note: with a Bayesian GMM, ``N_CLUSTERS`` is an upper bound on
+        the number of components, not a fixed count.
+        """
         self.gmm = GaussianMixture(
             n_components=N_CLUSTERS,
             covariance_type="diag",
