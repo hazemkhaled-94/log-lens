@@ -115,3 +115,10 @@ class Drain3Pipeline:
         if isinstance(entry, str):
             return entry
         return entry.message or ""
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    pipeline = Drain3Pipeline()
+    pipeline.train_from_directory()
+    pipeline.test_from_directory()
