@@ -6,6 +6,8 @@ import math
 
 from transformers import TrainingArguments
 
+from configs import RANDOM_STATE
+
 logger = logging.getLogger(__name__)
 
 SUPPORTED_LOSS_FUNCTIONS: tuple[str, ...] = ("weighted_ce", "gce")
@@ -27,6 +29,7 @@ class TrainerArgs:
     warmup_ratio: float = 0.1
     loss_function: str = "weighted_ce"
     gce_q: float = 0.7
+    seed: int = RANDOM_STATE
 
     def __init__(
         self,
@@ -100,5 +103,7 @@ class TrainerArgs:
             warmup_steps=dynamic_warmup_steps,
             gradient_accumulation_steps=self.gradient_accumulation_steps,
             fp16=False,
-            bf16=False
+            bf16=False,
+            seed=self.seed,
+            data_seed=self.seed,
         )

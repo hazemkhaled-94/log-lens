@@ -14,6 +14,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from configs import RANDOM_STATE
 from data_manager.logs.log_file import LogFile
 
 logger = logging.getLogger(__name__)
@@ -204,7 +205,8 @@ class DatasetPreprocessor:
         return sorted(groups.items())
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """CLI entry point for building a balanced training corpus."""
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     cli = argparse.ArgumentParser(
         description=(
@@ -228,8 +230,8 @@ if __name__ == "__main__":
         help="Max lines per output chunk (default: 50000).",
     )
     cli.add_argument(
-        "--seed", type=int, default=42,
-        help="Random seed (default: 42).",
+        "--seed", type=int, default=RANDOM_STATE,
+        help="Random seed (default: RANDOM_STATE from env).",
     )
     args = cli.parse_args()
 
@@ -241,3 +243,7 @@ if __name__ == "__main__":
     except (FileNotFoundError, ValueError) as exc:
         logger.error("%s", exc)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

@@ -49,8 +49,10 @@ def run_training(args: argparse.Namespace) -> None:
     from classifier.training.trainer_args import TrainerArgs
     from classifier.training.trainer import LogModelTrainer
     from data_manager.logs.log_dataset import LogDatasetBuilder
+    from configs import seed_everything
 
-    logger.info("=== Starting Training Pipeline ===")
+    seed = seed_everything()
+    logger.info("=== Starting Training Pipeline (seed=%d) ===", seed)
 
     paths: PipelinePaths = args.paths
     output_path = paths.output_dir / paths.base_model
@@ -125,7 +127,9 @@ def run_evaluation(args: argparse.Namespace) -> None:
     """
 
     from classifier.inference.batch_inference import ModelEvaluator
+    from configs import seed_everything
 
+    seed_everything()
     paths: PipelinePaths = args.paths
     model_dirs: list[Path] = (
         [Path(m) for m in args.model_dir]
@@ -147,6 +151,20 @@ def run_evaluation(args: argparse.Namespace) -> None:
             sample_size=150000,
             batch_size=64,
         ).evaluate()
+
+
+def run_serve(args: argparse.Namespace) -> None:
+    """Start the FastAPI inference server."""
+    from api.main import serve
+
+    serve()
+
+
+def run_cluster(args: argparse.Namespace) -> None:
+    """Run the clustering pipeline over the configured data directory."""
+    from clusterer.main import main as run_clusterer
+
+    run_clusterer()
 
 
 def main() -> None:
@@ -209,6 +227,14 @@ def main() -> None:
         ),
     )
     eval_p.set_defaults(func=run_evaluation)
+
+    serve_p = subparsers.add_parser("serve", help="Start the FastAPI server.")
+    serve_p.set_defaults(func=run_serve)
+
+    cluster_p = subparsers.add_parser(
+        "cluster", help="Cluster logs in the model's embedding space."
+    )
+    cluster_p.set_defaults(func=run_cluster)
 
     args = parser.parse_args()
     args.paths = paths

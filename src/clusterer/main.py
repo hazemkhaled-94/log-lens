@@ -13,7 +13,7 @@ from clusterer.embedder import LogEmbedder
 from clusterer.engine import LogEngine
 from clusterer.evaluator import ClusterEvaluator
 from clusterer.visualizer import ClusterVisualizer
-from configs import INFERENCE_OUTPUT_DIR
+from configs import INFERENCE_OUTPUT_DIR, seed_everything
 from data_manager.logs.log_file import LogFile
 from data_manager.masker.pipeline import Drain3Pipeline
 
@@ -91,6 +91,7 @@ def main() -> None:
         logger.error(f"Dataset directory not found: {data_dir}")
         sys.exit(1)
 
+    seed_everything()
     output_dir = Path(INFERENCE_OUTPUT_DIR) / "clusterer"
     output_dir.mkdir(parents=True, exist_ok=True)
 
