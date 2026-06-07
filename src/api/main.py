@@ -296,7 +296,12 @@ async def score_anomaly(request: AnomalyScoreRequest) -> AnomalyScoreResponse:
     )
 
 
-if __name__ == "__main__":
+def serve() -> None:
+    """Start the API with uvicorn using HOST/PORT from the environment."""
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8000"))
     uvicorn.run(app, host=host, port=port)
+
+
+if __name__ == "__main__":
+    serve()
