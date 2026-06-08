@@ -1,11 +1,14 @@
-.PHONY: install check lint type test serve train cluster
+.PHONY: install check lint fmt type test serve train cluster
 
 install:        ## Install deps and git hooks
 	poetry install
 	poetry run pre-commit install
 
-lint:           ## Run flake8
-	poetry run flake8 src tests
+lint:           ## Lint with ruff
+	poetry run ruff check src tests
+
+fmt:            ## Format with ruff
+	poetry run ruff format src tests
 
 type:           ## Run mypy
 	poetry run mypy src
