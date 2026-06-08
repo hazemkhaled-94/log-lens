@@ -35,11 +35,8 @@ class LogTokenizer:
                 special tokens.
         """
         logger.info(f"Loading tokenizer for {model_name}...")
-        self.tokenizer = (
-            AutoTokenizer.from_pretrained(
-                model_name,
-                cache_dir=local_cache
-            )
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_name, cache_dir=local_cache
         )
         self.max_length = max_length
         self.added_special_tokens: list[str] = []
@@ -47,10 +44,7 @@ class LogTokenizer:
             special_token_discoverer or RegexSpecialTokenDiscoverer()
         )
 
-    def tokenize_datasets(
-        self,
-        datasets: Any
-    ) -> Any:
+    def tokenize_datasets(self, datasets: Any) -> Any:
         """Tokenize splits, discover special tokens, drop the raw text column.
 
         Args:
@@ -61,9 +55,7 @@ class LogTokenizer:
         """
         logger.info("Applying batched tokenization via map method...")
 
-        discovered_tokens = self._special_token_discoverer.discover(
-            datasets
-        )
+        discovered_tokens = self._special_token_discoverer.discover(datasets)
         added_count = self._register_special_tokens(discovered_tokens)
         logger.info(
             "Dynamic placeholder token discovery found %d candidates; "
@@ -81,10 +73,7 @@ class LogTokenizer:
         logger.info("Dataset tokenization complete.")
         return tokenized_datasets
 
-    def tokenize_batch(
-        self,
-        batch: dict[str, list[str]]
-    ) -> BatchEncoding:
+    def tokenize_batch(self, batch: dict[str, list[str]]) -> BatchEncoding:
         """Tokenize a single batch of input text rows.
 
         Args:

@@ -77,13 +77,15 @@ def run_training(args: argparse.Namespace) -> None:
 
     for loss_function in loss_functions:
         logger.info("=== Training model with loss: %s ===", loss_function)
-        trainer = LogModelTrainer(config=TrainerArgs(
-            output_dir=str(output_path),
-            logging_dir=str(paths.log_dir),
-            model_path=paths.base_model,
-            loss_function=loss_function,
-            gce_q=args.gce_q,
-        ))
+        trainer = LogModelTrainer(
+            config=TrainerArgs(
+                output_dir=str(output_path),
+                logging_dir=str(paths.log_dir),
+                model_path=paths.base_model,
+                loss_function=loss_function,
+                gce_q=args.gce_q,
+            )
+        )
         _, save_dir = trainer.train(
             datasets=tokenized_datasets,
             tokenizer=tokenizer_handler.tokenizer,
@@ -91,7 +93,8 @@ def run_training(args: argparse.Namespace) -> None:
 
         logger.info(
             "=== Held-out test evaluation for %s (model=%s) ===",
-            loss_function, save_dir,
+            loss_function,
+            save_dir,
         )
         ModelEvaluator(
             data_dir=paths.test_data_dir,  # unused by evaluate_from_dataset
@@ -113,9 +116,9 @@ def run_inference(args: argparse.Namespace) -> None:
     entry = LogEntry(raw_json_dict={"line": args.text})
     # Mask like the training pipeline so the model sees the same form.
     entry.message = Drain3Pipeline().mask(entry.message)
-    LogLevelPredictor(
-        model_path=paths.model_dir
-    ).predict(entry=entry, verbose=True)
+    LogLevelPredictor(model_path=paths.model_dir).predict(
+        entry=entry, verbose=True
+    )
 
 
 def run_evaluation(args: argparse.Namespace) -> None:
@@ -143,7 +146,9 @@ def run_evaluation(args: argparse.Namespace) -> None:
     for idx, model_path in enumerate(model_dirs, start=1):
         logger.info(
             "--- [%d/%d] Evaluating %s ---",
-            idx, len(model_dirs), model_path,
+            idx,
+            len(model_dirs),
+            model_path,
         )
         ModelEvaluator(
             data_dir=paths.test_data_dir,

@@ -29,9 +29,7 @@ def test_allocate_quotas_never_exceeds_available_per_level():
 def test_allocate_quotas_empty_inputs():
     assert DatasetPreprocessor._allocate_quotas(Counter(), budget=10) == {}
     assert (
-        DatasetPreprocessor._allocate_quotas(
-            Counter({"INFO": 5}), budget=0
-        )
+        DatasetPreprocessor._allocate_quotas(Counter({"INFO": 5}), budget=0)
         == {}
     )
 

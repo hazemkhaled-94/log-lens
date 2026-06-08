@@ -1,8 +1,6 @@
-
 # mypy: disable-error-code=import-untyped
 
 """Low-level Drain3 parser wrapper used by the masking pipeline."""
-
 
 from drain3 import TemplateMiner  # type: ignore
 from drain3.file_persistence import FilePersistence  # type: ignore
@@ -17,9 +15,7 @@ class Drain3Parser:
     def __init__(self, config: Drain3Config) -> None:
         """Create a TemplateMiner from the given config."""
         persistence = FilePersistence(config.state_file)
-        self._miner = TemplateMiner(
-            persistence, config.build_miner_config()
-        )
+        self._miner = TemplateMiner(persistence, config.build_miner_config())
 
     def train(self, message: str) -> TrainResult:
         """Update the parse tree with a new log message."""

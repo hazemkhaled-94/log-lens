@@ -37,8 +37,11 @@ def _resolve_data_dir() -> Path:
     project_root = Path(__file__).resolve().parents[2]
     explicit = os.getenv("CLUSTER_DATA_DIR") or os.getenv("DATA_DIR")
     if explicit:
-        return Path(explicit) if Path(explicit).is_absolute() \
+        return (
+            Path(explicit)
+            if Path(explicit).is_absolute()
             else project_root / explicit
+        )
     return project_root / "resources" / "datasets" / "mini"
 
 

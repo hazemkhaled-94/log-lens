@@ -32,11 +32,7 @@ class TrainerArgs:
     seed: int = RANDOM_STATE
 
     def __init__(
-        self,
-        output_dir: str,
-        logging_dir: str,
-        model_path: str,
-        **kwds
+        self, output_dir: str, logging_dir: str, model_path: str, **kwds
     ) -> None:
         """Initialize trainer arguments, applying any keyword overrides.
 
@@ -62,8 +58,7 @@ class TrainerArgs:
             )
 
     def get_training_args(
-        self,
-        train_dataset_length: int
+        self, train_dataset_length: int
     ) -> TrainingArguments:
         """Build a ``TrainingArguments`` instance from this config."""
         logger.info("Generating Hugging Face TrainingArguments...")
@@ -71,12 +66,11 @@ class TrainerArgs:
         effective_batch_size = (
             self.batch_size * self.gradient_accumulation_steps
         )
-        total_training_steps = math.ceil(
-            train_dataset_length / effective_batch_size
-        ) * self.epochs
-        dynamic_warmup_steps = int(
-            total_training_steps * self.warmup_ratio
+        total_training_steps = (
+            math.ceil(train_dataset_length / effective_batch_size)
+            * self.epochs
         )
+        dynamic_warmup_steps = int(total_training_steps * self.warmup_ratio)
         logger.info(
             f"Dynamic Warmup Calculated: {dynamic_warmup_steps} steps "
             "("

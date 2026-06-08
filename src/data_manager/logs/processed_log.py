@@ -1,4 +1,3 @@
-
 # mypy: disable-error-code=import-untyped
 
 """Typed object that binds raw logs with Drain3 masking output."""
@@ -12,6 +11,7 @@ from data_manager.masker.template_results import TestResult
 @dataclass
 class ProcessedLog:
     """Binds a raw log entry to its Drain3 analysis for ML inference."""
+
     original_entry: LogEntry
     drain3_result: TestResult
 

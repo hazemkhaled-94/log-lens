@@ -82,8 +82,7 @@ class SeverityMismatchScorer:
     ) -> SeverityMismatchResult:
         """Return a copy of ``result`` with the given threshold applied."""
         is_anomaly = (
-            result.severity_distance > 0
-            and result.anomaly_score >= threshold
+            result.severity_distance > 0 and result.anomaly_score >= threshold
         )
         return replace(
             result,

@@ -12,7 +12,7 @@ from transformers import (
     AutoModelForSequenceClassification,
     DataCollatorWithPadding,
     Trainer,
-    TrainerCallback
+    TrainerCallback,
 )
 from transformers.trainer_utils import EvalPrediction, TrainOutput
 
@@ -34,9 +34,7 @@ class UnfreezeCallback(TrainerCallback):
 
         model = kwargs.get("model")
         if model is None:
-            logger.error(
-                "UnfreezeCallback: No model found in kwargs."
-            )
+            logger.error("UnfreezeCallback: No model found in kwargs.")
             raise RuntimeError("Model not found in callback kwargs.")
 
         if (
@@ -44,7 +42,6 @@ class UnfreezeCallback(TrainerCallback):
             and state.epoch is not None
             and int(state.epoch) == self.unfreeze_epoch
         ):
-
             logger.info(
                 f"\nEPOCH {self.unfreeze_epoch}: "
                 "Unfreezing the base model backbone!"
@@ -66,7 +63,7 @@ class WeightedLossTrainer(Trainer):
         loss_function: str = "weighted_ce",
         gce_q: float = 0.7,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """Initialize weighted loss trainer behavior.
 
@@ -84,8 +81,7 @@ class WeightedLossTrainer(Trainer):
         self._class_weights: torch.Tensor | None
         if class_weights is not None:
             self._class_weights = torch.tensor(
-                class_weights,
-                dtype=torch.float32
+                class_weights, dtype=torch.float32
             )
         else:
             self._class_weights = None
@@ -142,11 +138,7 @@ class WeightedLossTrainer(Trainer):
         return weighted_sum / weight_norm
 
     def compute_loss(
-        self,
-        model,
-        inputs,
-        return_outputs=False,
-        num_items_in_batch=None
+        self, model, inputs, return_outputs=False, num_items_in_batch=None
     ):
         """Override default Trainer loss with weighted CE or GCE loss."""
         labels = inputs.pop("labels")
@@ -189,7 +181,8 @@ class WeightedLossTrainer(Trainer):
         optimizer_grouped_parameters = [
             {
                 "params": [
-                    param for name, param in head_named_params
+                    param
+                    for name, param in head_named_params
                     if not any(term in name for term in no_decay_terms)
                 ],
                 "lr": 1e-4,
@@ -197,7 +190,8 @@ class WeightedLossTrainer(Trainer):
             },
             {
                 "params": [
-                    param for name, param in head_named_params
+                    param
+                    for name, param in head_named_params
                     if any(term in name for term in no_decay_terms)
                 ],
                 "lr": 1e-4,
@@ -205,7 +199,8 @@ class WeightedLossTrainer(Trainer):
             },
             {
                 "params": [
-                    param for name, param in base_named_params
+                    param
+                    for name, param in base_named_params
                     if not any(term in name for term in no_decay_terms)
                 ],
                 "lr": self.args.learning_rate,
@@ -213,7 +208,8 @@ class WeightedLossTrainer(Trainer):
             },
             {
                 "params": [
-                    param for name, param in base_named_params
+                    param
+                    for name, param in base_named_params
                     if any(term in name for term in no_decay_terms)
                 ],
                 "lr": self.args.learning_rate,
@@ -240,7 +236,7 @@ class LogModelTrainer:
             id2label=LogLevel.id2label(),
             label2id=LogLevel.label2id(),
             cache_dir=config.output_dir,
-            trust_remote_code=True
+            trust_remote_code=True,
         )
 
         logger.info("Freezing base model backbone for Epoch 0...")
@@ -313,9 +309,8 @@ class LogModelTrainer:
             return [1.0] * num_labels
 
         weights = np.zeros(num_labels, dtype=np.float32)
-        weights[non_zero_mask] = (
-            float(label_ids.size)
-            / (float(num_labels) * label_counts[non_zero_mask])
+        weights[non_zero_mask] = float(label_ids.size) / (
+            float(num_labels) * label_counts[non_zero_mask]
         )
 
         id2label = self.model.config.id2label
@@ -356,9 +351,7 @@ class LogModelTrainer:
             train_dataset_length=train_len
         )
 
-        data_collator = DataCollatorWithPadding(
-            tokenizer=tokenizer
-        )
+        data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
         unfreeze_callback = UnfreezeCallback(unfreeze_epoch=1)
         train_labels = datasets["train"]["label"]
@@ -386,15 +379,14 @@ class LogModelTrainer:
             eval_dataset=datasets["validation"],
             compute_metrics=self._compute_metrics,
             data_collator=data_collator,
-            callbacks=[unfreeze_callback]
+            callbacks=[unfreeze_callback],
         )
 
         model_name: str = (
             "log_classifier_model_"
             + self.config.loss_function
             + "_"
-            +
-            datetime.now().strftime("%Y%m%d_%H%M%S")
+            + datetime.now().strftime("%Y%m%d_%H%M%S")
         )
 
         logger.info("Starting training loop...")

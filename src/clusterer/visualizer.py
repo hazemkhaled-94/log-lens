@@ -46,7 +46,7 @@ class ClusterVisualizer:
         scatter = ax.scatter(
             coords[:, 0],
             coords[:, 1],
-            coords[:, 2],   # type: ignore
+            coords[:, 2],  # type: ignore
             c=labels,
             cmap="coolwarm",
             s=40,

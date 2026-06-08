@@ -37,9 +37,7 @@ class Drain3Config:
     def _masking_rules() -> list[MaskingInstruction]:
         """Return ordered masking instructions applied before tokenisation."""
         return [
-            MaskingInstruction(
-                r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])", ""
-            ),
+            MaskingInstruction(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])", ""),
             MaskingInstruction(r"\[[^\]]+\]", "<MASKED_INFO>"),
             MaskingInstruction(
                 r"\b(?:[a-zA-Z0-9_]+\.)+[A-Z][a-zA-Z0-9_]+\b",

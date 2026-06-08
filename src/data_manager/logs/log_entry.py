@@ -4,6 +4,7 @@ Supports JSON dicts (Loki/Grafana shape with 'line', 'timestamp', 'fields')
 and plain ``.log`` files where each line is a single record. Level/message
 extraction is via regex; value masking is left to Drain3.
 """
+
 import re
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional
@@ -28,7 +29,7 @@ LOG_PATTERN = re.compile(
     r".*?"
     r"(?:---|:|\s-\s|\])\s*"
     r"(?P<message>.*)$",
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 
@@ -57,6 +58,7 @@ LOG_PATTERN_LOOSE = re.compile(
 @dataclass
 class LogMetadata:
     """Infrastructure metadata from JSON 'fields'."""
+
     app: str = ""
     container: str = ""
     detected_level: str = ""
@@ -74,8 +76,7 @@ class LogMetadata:
         if not data:
             return cls()
         valid_data = {
-            k: v for k, v in data.items()
-            if k in cls.__annotations__
+            k: v for k, v in data.items() if k in cls.__annotations__
         }
         return cls(**valid_data)
 
@@ -88,6 +89,7 @@ class LogEntry:
     or a plain log line via ``raw_line`` / :meth:`from_line`. When built
     from a raw line, ``log_timestamp`` and ``metadata`` are left empty.
     """
+
     raw_json_dict: Optional[Dict[str, Any]] = field(default=None, repr=False)
     raw_line: str = ""
 

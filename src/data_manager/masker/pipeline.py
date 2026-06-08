@@ -41,9 +41,7 @@ class Drain3Pipeline:
         """Return the masked form of an entry (the text the model sees)."""
         return self.test(entry).masked_message
 
-    def train_batch(
-        self, entries: list[_EntryLike]
-    ) -> list[TrainResult]:
+    def train_batch(self, entries: list[_EntryLike]) -> list[TrainResult]:
         """Train on a batch of entries; empty messages are skipped."""
         return [
             self._parser.train(msg)
@@ -51,9 +49,7 @@ class Drain3Pipeline:
             if (msg := self._to_message(e))
         ]
 
-    def test_batch(
-        self, entries: list[_EntryLike]
-    ) -> list[TestResult]:
+    def test_batch(self, entries: list[_EntryLike]) -> list[TestResult]:
         """Test a batch of entries; empty messages are skipped."""
         return [
             self._parser.match(msg)

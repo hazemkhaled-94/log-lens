@@ -146,7 +146,7 @@ class DatasetPreprocessor:
         written: list[Path] = []
         for i in range(n_chunks):
             start = i * self._lines_per_file
-            chunk = lines[start:start + self._lines_per_file]
+            chunk = lines[start : start + self._lines_per_file]
             if not chunk:
                 break
             text = "".join(
@@ -214,23 +214,33 @@ def main() -> None:
         )
     )
     cli.add_argument(
-        "--src", type=Path, required=True,
+        "--src",
+        type=Path,
+        required=True,
         help="Source directory, walked recursively.",
     )
     cli.add_argument(
-        "--out", type=Path, required=True,
+        "--out",
+        type=Path,
+        required=True,
         help="Output stem; chunks are written as '<stem>_001.log', ...",
     )
     cli.add_argument(
-        "--total", type=int, default=200_000,
+        "--total",
+        type=int,
+        default=200_000,
         help="Total entries to sample (default: 200000).",
     )
     cli.add_argument(
-        "--lines-per-file", type=int, default=50_000,
+        "--lines-per-file",
+        type=int,
+        default=50_000,
         help="Max lines per output chunk (default: 50000).",
     )
     cli.add_argument(
-        "--seed", type=int, default=RANDOM_STATE,
+        "--seed",
+        type=int,
+        default=RANDOM_STATE,
         help="Random seed (default: RANDOM_STATE from env).",
     )
     args = cli.parse_args()

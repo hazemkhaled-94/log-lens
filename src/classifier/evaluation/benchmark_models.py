@@ -27,7 +27,7 @@ class ModelBenchmark:
         custom_model_path: str,
         hf_model_path: str = "byviz/bylastic_classification_logs",
         sample_size: int = 10000,
-        batch_size: int = 64
+        batch_size: int = 64,
     ) -> None:
         """Initialize the benchmark.
 
@@ -64,17 +64,14 @@ class ModelBenchmark:
         aggregate_log_file = LogFile.from_directory(self.data_dir)
 
         valid_entries = [
-            entry for entry in aggregate_log_file.entries
+            entry
+            for entry in aggregate_log_file.entries
             if entry.line_level.upper() != "UNKNOWN"
         ]
 
         # Sample from valid entries for consistent comparison
-        self.actual_sample_size = min(
-            self.sample_size, len(valid_entries)
-        )
-        sampled_entries = random.sample(
-            valid_entries, self.actual_sample_size
-        )
+        self.actual_sample_size = min(self.sample_size, len(valid_entries))
+        sampled_entries = random.sample(valid_entries, self.actual_sample_size)
 
         # Extract texts and labels for model evaluation
         self.texts = [entry.message for entry in sampled_entries]
@@ -86,14 +83,14 @@ class ModelBenchmark:
         """Evaluate both models on the same dataset."""
         models_to_test = {
             "Custom Fine-Tuned Model": self.custom_model_path,
-            "Byviz Open-Source Model": self.hf_model_path
+            "Byviz Open-Source Model": self.hf_model_path,
         }
 
         for model_name, model_path in models_to_test.items():
-            logger.info("\n" + "="*70)
+            logger.info("\n" + "=" * 70)
             logger.info(f" INITIALIZING: {model_name}")
             logger.info(f" Path: {model_path}")
-            logger.info("="*70)
+            logger.info("=" * 70)
 
             accuracy = self._evaluate_model(model_name, model_path)
             self.results[model_name] = accuracy
@@ -110,15 +107,11 @@ class ModelBenchmark:
         """
         # Load tokenizer and model
         tokenizer = AutoTokenizer.from_pretrained(
-            model_path,
-            trust_remote_code=True
+            model_path, trust_remote_code=True
         )
-        model = (
-            AutoModelForSequenceClassification.from_pretrained(
-                model_path,
-                trust_remote_code=True
-            ).to(self.device)
-        )
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_path, trust_remote_code=True
+        ).to(self.device)
         model.eval()
 
         correct_predictions = 0
@@ -126,19 +119,17 @@ class ModelBenchmark:
         # Process texts in batches
         for i in tqdm(
             range(0, len(self.texts), self.batch_size),
-            desc=f"Scoring {model_name}"
+            desc=f"Scoring {model_name}",
         ):
-            batch_texts = self.texts[i: i + self.batch_size]
-            batch_true_labels = (
-                self.true_labels[i: i + self.batch_size]
-            )
+            batch_texts = self.texts[i : i + self.batch_size]
+            batch_true_labels = self.true_labels[i : i + self.batch_size]
 
             # Tokenize batch input
             inputs = tokenizer(
                 batch_texts,
                 return_tensors="pt",
                 truncation=True,
-                padding="max_length"
+                padding="max_length",
             ).to(self.device)
 
             # Forward pass without gradient computation
@@ -146,19 +137,15 @@ class ModelBenchmark:
                 outputs = model(**inputs)
 
             logits = outputs.logits
-            predicted_class_ids = (
-                torch.argmax(logits, dim=-1).tolist()
-            )
+            predicted_class_ids = torch.argmax(logits, dim=-1).tolist()
 
             # Compare predictions with ground truth labels
             for pred_id, true_label in zip(
                 predicted_class_ids, batch_true_labels
             ):
-                predicted_label = (
-                    model.config.id2label.get(
-                        pred_id, f"ID_{pred_id}"
-                    ).upper()
-                )
+                predicted_label = model.config.id2label.get(
+                    pred_id, f"ID_{pred_id}"
+                ).upper()
 
                 if predicted_label == true_label:
                     correct_predictions += 1
@@ -176,13 +163,13 @@ class ModelBenchmark:
 
     def _print_results(self) -> None:
         """Print the benchmark results."""
-        logger.info("\n" + "🏆"*25)
+        logger.info("\n" + "🏆" * 25)
         logger.info(" BENCHMARK SHOWDOWN RESULTS")
-        logger.info("🏆"*25)
+        logger.info("🏆" * 25)
         logger.info(
             f"Dataset Size: {self.actual_sample_size} exact same logs\n"
         )
 
         for model_name, acc in self.results.items():
             logger.info(f"{model_name:<30}: {acc:.2f}% Accuracy")
-        logger.info("="*70)
+        logger.info("=" * 70)

@@ -45,7 +45,7 @@ class ModelEvaluator:
         data_dir: Path,
         model_path: Path,
         sample_size: int = 10000,
-        batch_size: int = 128
+        batch_size: int = 128,
     ) -> None:
         """Initialize the evaluator."""
         self.data_dir = data_dir
@@ -67,9 +67,7 @@ class ModelEvaluator:
         under_weight = float(
             os.getenv("ANOMALY_UNDER_PREDICTION_WEIGHT", "1.5")
         )
-        over_weight = float(
-            os.getenv("ANOMALY_OVER_PREDICTION_WEIGHT", "1.0")
-        )
+        over_weight = float(os.getenv("ANOMALY_OVER_PREDICTION_WEIGHT", "1.0"))
         calibration_percentile = float(
             os.getenv("ANOMALY_CALIBRATION_PERCENTILE", "95.0")
         )
@@ -129,7 +127,8 @@ class ModelEvaluator:
         try:
             logger.info(
                 "Starting in-memory evaluation pipeline on the held-out "
-                "test split (model=%s)...", self.model_path,
+                "test split (model=%s)...",
+                self.model_path,
             )
 
             n = len(dataset)
@@ -212,8 +211,7 @@ class ModelEvaluator:
         )
 
         actual_sample_size = min(
-            self.sample_size,
-            len(aggregate_log_file.entries)
+            self.sample_size, len(aggregate_log_file.entries)
         )
         sampled_entries = random.sample(
             aggregate_log_file.entries, actual_sample_size
@@ -224,8 +222,7 @@ class ModelEvaluator:
             self.true_labels.append(LogLevel.canonicalize(entry.line_level))
 
         logger.info(
-            f"Successfully sampled {actual_sample_size} "
-            "clean log entries."
+            f"Successfully sampled {actual_sample_size} clean log entries."
         )
 
     def _sanitize_entries(self) -> None:
@@ -247,9 +244,9 @@ class ModelEvaluator:
 
     def _log_sample_inputs(self, num_samples: int = 30) -> None:
         """Log a few samples to show exactly what the model sees."""
-        logger.info("\n" + "="*70)
+        logger.info("\n" + "=" * 70)
         logger.info(" SAMPLE MODEL INPUTS (MASKED TEXT SEEN BY TOKENIZER)")
-        logger.info("="*70)
+        logger.info("=" * 70)
 
         if not self.entries:
             return
@@ -260,7 +257,7 @@ class ModelEvaluator:
         for i, entry in enumerate(samples, 1):
             logger.info(f"Sample {i}: '{entry.message}'\n")
 
-        logger.info("="*70 + "\n")
+        logger.info("=" * 70 + "\n")
 
     def _run_inference(self) -> None:
         """Run batched inference on all texts."""
@@ -280,7 +277,7 @@ class ModelEvaluator:
             self.entries,
             predicted_labels,
             self.true_labels,
-            confidence_intervals
+            confidence_intervals,
         ):
             self.predictions_log.append(
                 ((entry, true_label, predicted_label), confidence)
@@ -308,20 +305,22 @@ class ModelEvaluator:
         if all_confidences:
             avg_conf = sum(all_confidences) / len(all_confidences)
             correct_confs = [
-                conf for (_, true_l, pred_l), conf in self.predictions_log
+                conf
+                for (_, true_l, pred_l), conf in self.predictions_log
                 if pred_l.upper() == true_l.upper()
             ]
             wrong_confs = [
-                conf for (_, true_l, pred_l), conf in self.predictions_log
+                conf
+                for (_, true_l, pred_l), conf in self.predictions_log
                 if pred_l.upper() != true_l.upper() and true_l != "UNKNOWN"
             ]
             avg_correct = (
                 sum(correct_confs) / len(correct_confs)
-                if correct_confs else 0.0
+                if correct_confs
+                else 0.0
             )
             avg_wrong = (
-                sum(wrong_confs) / len(wrong_confs)
-                if wrong_confs else 0.0
+                sum(wrong_confs) / len(wrong_confs) if wrong_confs else 0.0
             )
             logger.info(
                 f"Avg Confidence (all):     {avg_conf:.2f}%\n"
@@ -385,7 +384,8 @@ class ModelEvaluator:
         )
         anomaly_rate = (
             (anomaly_count / len(self.mismatch_results)) * 100
-            if self.mismatch_results else 0.0
+            if self.mismatch_results
+            else 0.0
         )
 
         logger.info(f"Calibrated Threshold: {threshold:.4f}")
@@ -409,8 +409,7 @@ class ModelEvaluator:
         positive_count = sum(y_true)
 
         logger.info(
-            "Target Event: critical misses "
-            "(ERROR/FATAL under-prediction)"
+            "Target Event: critical misses (ERROR/FATAL under-prediction)"
         )
         logger.info(f"Critical Misses:       {positive_count}")
 
@@ -448,13 +447,14 @@ class ModelEvaluator:
         if actual_sample_size > 0:
             accuracy = (self.correct_predictions / actual_sample_size) * 100
 
-        logger.info("\n" + "="*70)
+        logger.info("\n" + "=" * 70)
         logger.info(" MASS EVALUATION REPORT")
-        logger.info("="*70)
+        logger.info("=" * 70)
         known_confidences = [conf for _, conf in known_predictions]
         avg_conf = (
             sum(known_confidences) / len(known_confidences)
-            if known_confidences else 0.0
+            if known_confidences
+            else 0.0
         )
 
         logger.info(f"Total Logs Evaluated: {len(self.entries)}")
@@ -497,12 +497,12 @@ class ModelEvaluator:
                     f"Support: {support}"
                 )
 
-        logger.info("="*70)
+        logger.info("=" * 70)
 
         unknown_predictions = [
-            pred_l for (_, true_l, pred_l), _ in self.predictions_log if (
-                true_l == "UNKNOWN"
-            )
+            pred_l
+            for (_, true_l, pred_l), _ in self.predictions_log
+            if (true_l == "UNKNOWN")
         ]
 
         if unknown_predictions:
@@ -511,12 +511,11 @@ class ModelEvaluator:
             u_counts = Counter(unknown_predictions)
             for label, count in u_counts.items():
                 logger.info(f"{label:<8}: {count} logs")
-            logger.info("="*70)
+            logger.info("=" * 70)
 
         if y_true:
             logger.info(
-                "\n--- Detailed Classification Report "
-                "(Known Labels Only) ---"
+                "\n--- Detailed Classification Report (Known Labels Only) ---"
             )
             report_str = classification_report(
                 y_true, y_pred, digits=4, zero_division=0
@@ -525,9 +524,9 @@ class ModelEvaluator:
 
     def _generate_error_analysis(self) -> None:
         """Generate and log error analysis."""
-        logger.info("\n" + "-"*70)
+        logger.info("\n" + "-" * 70)
         logger.info(" ERROR ANALYSIS: INCORRECT PREDICTIONS")
-        logger.info("-"*70)
+        logger.info("-" * 70)
 
         # Ignore UNKNOWN labels in the error analysis
         incorrect_predictions = [
@@ -537,17 +536,14 @@ class ModelEvaluator:
         ]
 
         if not incorrect_predictions:
-            logger.info(
-                "🎉 INCREDIBLE! Zero incorrect predictions found."
-            )
+            logger.info("🎉 INCREDIBLE! Zero incorrect predictions found.")
         else:
             logger.info(
                 f"Found {len(incorrect_predictions)} "
                 "total incorrect predictions."
             )
             logger.info(
-                "Here is a random sample of "
-                "where the model got confused:\n"
+                "Here is a random sample of where the model got confused:\n"
             )
 
             num_errors = min(10, len(incorrect_predictions))
@@ -561,7 +557,7 @@ class ModelEvaluator:
                     f"CONF: {confidence:.2f}% "
                 )
 
-        logger.info("="*70)
+        logger.info("=" * 70)
 
     def _default_export_dir(self) -> Path:
         """Per-model output dir under the inference output dir."""
@@ -582,17 +578,21 @@ class ModelEvaluator:
         Path(output_file).parent.mkdir(parents=True, exist_ok=True)
 
         new_dataset = []
-        for (entry, true_label, pred_label), confidence in (
-            self.predictions_log
-        ):
+        for (
+            entry,
+            true_label,
+            pred_label,
+        ), confidence in self.predictions_log:
             if true_label == "UNKNOWN":
-                new_dataset.append({
-                    "text": entry.raw_line,
-                    "masked_text": entry.message,
-                    "raw_json": entry.raw_json_dict,
-                    "label": pred_label,
-                    "confidence": round(confidence, 4)
-                })
+                new_dataset.append(
+                    {
+                        "text": entry.raw_line,
+                        "masked_text": entry.message,
+                        "raw_json": entry.raw_json_dict,
+                        "label": pred_label,
+                        "confidence": round(confidence, 4),
+                    }
+                )
 
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(new_dataset, f, indent=4, ensure_ascii=False)
@@ -624,22 +624,24 @@ class ModelEvaluator:
             self.mismatch_results,
         ):
             if true_label != pred_label and true_label != "UNKNOWN":
-                incorrect_dataset.append({
-                    "true_label": true_label,
-                    "predicted_label": pred_label,
-                    "confidence": round(confidence, 4),
-                    "mismatch_direction": mismatch.mismatch_direction,
-                    "mismatch_distance": mismatch.severity_distance,
-                    "anomaly_score": round(mismatch.anomaly_score, 4),
-                    "anomaly_threshold": round(
-                        mismatch.anomaly_threshold,
-                        4,
-                    ),
-                    "is_anomaly": mismatch.is_anomaly,
-                    "raw_text": entry.raw_line,
-                    "masked_text_seen_by_model": entry.message,
-                    "raw_json": entry.raw_json_dict,
-                })
+                incorrect_dataset.append(
+                    {
+                        "true_label": true_label,
+                        "predicted_label": pred_label,
+                        "confidence": round(confidence, 4),
+                        "mismatch_direction": mismatch.mismatch_direction,
+                        "mismatch_distance": mismatch.severity_distance,
+                        "anomaly_score": round(mismatch.anomaly_score, 4),
+                        "anomaly_threshold": round(
+                            mismatch.anomaly_threshold,
+                            4,
+                        ),
+                        "is_anomaly": mismatch.is_anomaly,
+                        "raw_text": entry.raw_line,
+                        "masked_text_seen_by_model": entry.message,
+                        "raw_json": entry.raw_json_dict,
+                    }
+                )
 
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(incorrect_dataset, f, indent=4, ensure_ascii=False)

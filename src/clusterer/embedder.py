@@ -34,13 +34,11 @@ class LogEmbedder:
         self.model.eval()
 
     @torch.no_grad()
-    def embed_logs(
-        self, logs: list[str], batch_size: int = 64
-    ) -> np.ndarray:
+    def embed_logs(self, logs: list[str], batch_size: int = 64) -> np.ndarray:
         """Encode masked log messages into mean-pooled hidden-state vectors."""
         vectors: list[np.ndarray] = []
         for start in range(0, len(logs), batch_size):
-            batch = logs[start:start + batch_size]
+            batch = logs[start : start + batch_size]
             encoded = self.tokenizer(
                 batch,
                 padding=True,

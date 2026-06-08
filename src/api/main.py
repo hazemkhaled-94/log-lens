@@ -40,7 +40,7 @@ app = FastAPI(
         "name": "Hazem Khaled",
         "email": "hazem.mkhaled@icloud.com",
     },
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 
@@ -154,7 +154,7 @@ async def health_check():
     if ModelContainer.predictor is None:
         raise HTTPException(
             status_code=503,
-            detail="Inference attempted before model was loaded in lifespan."
+            detail="Inference attempted before model was loaded in lifespan.",
         )
     return {"status": "healthy", "model_loaded": True}
 

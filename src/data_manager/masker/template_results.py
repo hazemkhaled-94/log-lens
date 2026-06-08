@@ -1,4 +1,3 @@
-
 """Typed result models returned by Drain3 parser operations."""
 
 from dataclasses import dataclass

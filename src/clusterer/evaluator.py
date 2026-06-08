@@ -76,8 +76,7 @@ class ClusterEvaluator:
         if all_outliers:
             file_path.write_text("\n".join(all_outliers), encoding="utf-8")
             logger.info(
-                f"-> Full outlier report saved to: "
-                f"{file_path.resolve()}\n"
+                f"-> Full outlier report saved to: {file_path.resolve()}\n"
             )
         else:
             logger.info("-> Perfect clustering! No outliers found.\n")

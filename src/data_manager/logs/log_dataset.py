@@ -66,9 +66,7 @@ class LogDatasetBuilder:
 
             iterator = LogFile.yield_from_directory(Path(directory_path))
 
-            pipeline = Drain3Pipeline(
-                config=Drain3Config()
-            )
+            pipeline = Drain3Pipeline(config=Drain3Config())
             processed = 0
 
             for entry in iterator:
@@ -92,7 +90,7 @@ class LogDatasetBuilder:
 
         return Dataset.from_generator(
             gen,
-            gen_kwargs={"directory_path": str(data_dir), "max_logs": max_logs}
+            gen_kwargs={"directory_path": str(data_dir), "max_logs": max_logs},
         )
 
     def create_splits(
@@ -139,8 +137,7 @@ class LogDatasetBuilder:
         }
         if too_rare:
             dropped_summary = {
-                class_label.int2str(lid): cnt
-                for lid, cnt in too_rare.items()
+                class_label.int2str(lid): cnt for lid, cnt in too_rare.items()
             }
             logger.warning(
                 "Dropping %d row(s) from %d class(es) with fewer than "
@@ -162,9 +159,7 @@ class LogDatasetBuilder:
 
         test_val_ratio = val_size + test_size
         train_test_split = dataset.train_test_split(
-            test_size=test_val_ratio,
-            seed=seed,
-            stratify_by_column="label"
+            test_size=test_val_ratio, seed=seed, stratify_by_column="label"
         )
 
         logger.info(
@@ -175,7 +170,7 @@ class LogDatasetBuilder:
         val_test_split = train_test_split["test"].train_test_split(
             test_size=1.0 - val_ratio_adjusted,
             seed=seed,
-            stratify_by_column="label"
+            stratify_by_column="label",
         )
 
         logger.info("Stratified dataset splitting complete.")

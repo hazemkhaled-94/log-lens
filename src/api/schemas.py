@@ -8,50 +8,24 @@ from pydantic import BaseModel, Field
 class LogFieldsSchema(BaseModel):
     """Maps to LogMetadata in log_entry.py — captures the standard
     infrastructure metadata injected by the logging agent."""
-    app: str = Field(
-        default="",
-        description="Application name"
-    )
-    container: str = Field(
-        default="",
-        description="Container ID or name"
-    )
+
+    app: str = Field(default="", description="Application name")
+    container: str = Field(default="", description="Container ID or name")
     detected_level: str = Field(
-        default="unknown",
-        description="Level detected by the log agent"
+        default="unknown", description="Level detected by the log agent"
     )
-    filename: str = Field(
-        default="",
-        description="Source log file path"
-    )
-    job: str = Field(
-        default="",
-        description="Loki/Promtail job label"
-    )
-    namespace: str = Field(
-        default="",
-        description="Kubernetes namespace"
-    )
-    node_name: str = Field(
-        default="",
-        description="Kubernetes node name"
-    )
-    pod: str = Field(
-        default="",
-        description="Kubernetes pod name"
-    )
-    service_name: str = Field(
-        default="",
-        description="Service name"
-    )
-    stream: str = Field(
-        default="",
-        description="Log stream (stdout/stderr)"
-    )
+    filename: str = Field(default="", description="Source log file path")
+    job: str = Field(default="", description="Loki/Promtail job label")
+    namespace: str = Field(default="", description="Kubernetes namespace")
+    node_name: str = Field(default="", description="Kubernetes node name")
+    pod: str = Field(default="", description="Kubernetes pod name")
+    service_name: str = Field(default="", description="Service name")
+    stream: str = Field(default="", description="Log stream (stdout/stderr)")
 
 
 class LogRequest(BaseModel):
     """Single log entry as stored in the dataset JSON files."""
+
     timestamp: str = Field(..., description="Timestamp string")
     line: str = Field(..., min_length=1, description="Raw log line")
     fields: LogFieldsSchema = Field(default_factory=LogFieldsSchema)
@@ -59,26 +33,23 @@ class LogRequest(BaseModel):
 
 class BatchRequest(BaseModel):
     """Wrapper for a batch of log entries submitted to /predict/batch."""
+
     logs: List[LogRequest]
 
 
 class PredictionResponse(BaseModel):
     """Result for a single log entry prediction."""
+
     observed_label: str = Field(
         description=(
-            "Runtime developer-assigned severity extracted "
-            "from the log"
+            "Runtime developer-assigned severity extracted from the log"
         )
     )
-    raw_line: str = Field(
-        description="Original log line before sanitisation"
-    )
+    raw_line: str = Field(description="Original log line before sanitisation")
     predicted_label: str = Field(
         description="Predicted log level (e.g. ERROR, WARN)"
     )
-    confidence: float = Field(
-        description="Model confidence score (0-100)"
-    )
+    confidence: float = Field(description="Model confidence score (0-100)")
     mismatch_direction: str = Field(
         description="match, under_prediction, or over_prediction"
     )
@@ -93,14 +64,12 @@ class PredictionResponse(BaseModel):
     )
     anomaly_threshold: float = Field(
         description=(
-            "Threshold used to convert anomaly score "
-            "into a binary decision"
+            "Threshold used to convert anomaly score into a binary decision"
         )
     )
     is_anomaly: bool = Field(
         description=(
-            "True when mismatch score exceeds threshold "
-            "and severity differs"
+            "True when mismatch score exceeds threshold and severity differs"
         )
     )
     metadata: Dict[str, Any] = Field(
@@ -110,6 +79,7 @@ class PredictionResponse(BaseModel):
 
 class BatchResponse(BaseModel):
     """Aggregated response for a batch prediction request."""
+
     total: int = Field(description="Number of log entries processed")
     predictions: List[PredictionResponse]
 
@@ -169,24 +139,16 @@ class AnomalyScoreRequest(BaseModel):
 class AnomalyScoreResponse(BaseModel):
     """Standalone semantic-severity mismatch scoring response."""
 
-    observed_severity: str = Field(
-        description="Canonical observed severity"
-    )
-    predicted_severity: str = Field(
-        description="Canonical predicted severity"
-    )
+    observed_severity: str = Field(description="Canonical observed severity")
+    predicted_severity: str = Field(description="Canonical predicted severity")
     mismatch_direction: str = Field(
         description="match, under_prediction, or over_prediction"
     )
     mismatch_distance: int = Field(
         description="Absolute rank distance on severity scale"
     )
-    confidence: float = Field(
-        description="Input confidence percentage"
-    )
-    anomaly_score: float = Field(
-        description="Computed mismatch anomaly score"
-    )
+    confidence: float = Field(description="Input confidence percentage")
+    anomaly_score: float = Field(description="Computed mismatch anomaly score")
     anomaly_threshold: float = Field(
         description="Threshold used for anomaly decision"
     )

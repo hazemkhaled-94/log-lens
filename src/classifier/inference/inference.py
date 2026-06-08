@@ -9,10 +9,7 @@ from typing import List, Optional, Tuple
 import logging
 import torch
 from tqdm.auto import tqdm  # type: ignore
-from transformers import (
-    AutoModelForSequenceClassification,
-    AutoTokenizer
-)
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from data_manager.logs.log_entry import LogEntry
 
@@ -46,13 +43,11 @@ class LogLevelPredictor:
 
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(  # type: ignore
-                self.model_path,
-                trust_remote_code=True
+                self.model_path, trust_remote_code=True
             )
             self.model = (  # type: ignore
                 AutoModelForSequenceClassification.from_pretrained(
-                    self.model_path,
-                    trust_remote_code=True
+                    self.model_path, trust_remote_code=True
                 )
             )
             assert self.model is not None, "Model failed to instantiate."
@@ -66,9 +61,7 @@ class LogLevelPredictor:
 
     @torch.no_grad()
     def predict(
-        self,
-        entry: LogEntry,
-        verbose: bool = True
+        self, entry: LogEntry, verbose: bool = True
     ) -> Tuple[str, float, int]:
         """Predict the log level for the given log text.
 
@@ -95,9 +88,7 @@ class LogLevelPredictor:
         ).upper()
 
         probabilities = torch.nn.functional.softmax(logits, dim=-1)
-        confidence = (
-            probabilities[0][predicted_class_id].item() * 100
-        )
+        confidence = probabilities[0][predicted_class_id].item() * 100
 
         if verbose:
             self._log_prediction_details(
@@ -105,16 +96,14 @@ class LogLevelPredictor:
                 logits[0].tolist(),
                 predicted_class_id,
                 predicted_label,
-                confidence
+                confidence,
             )
 
         return predicted_label, confidence, predicted_class_id
 
     @torch.no_grad()
     def predict_batch(
-        self,
-        entries: List[LogEntry],
-        batch_size: int
+        self, entries: List[LogEntry], batch_size: int
     ) -> Tuple[List[str], List[float]]:
         """Run optimized batch inference for many log entries.
 
@@ -141,7 +130,7 @@ class LogLevelPredictor:
             unit="batch",
         )
         for i in progress:
-            batch = entries[i: i + batch_size]
+            batch = entries[i : i + batch_size]
             batch_texts = [entry.message for entry in batch]
 
             inputs = self.tokenizer(  # type: ignore
@@ -157,13 +146,10 @@ class LogLevelPredictor:
             confidences, pred_ids = torch.max(probs, dim=-1)
 
             for confidence, pred_id in zip(
-                confidences.tolist(),
-                pred_ids.tolist()
+                confidences.tolist(), pred_ids.tolist()
             ):
                 predictions.append(
-                    self.id2label.get(
-                        pred_id, "UNKNOWN"
-                    ).upper()
+                    self.id2label.get(pred_id, "UNKNOWN").upper()
                 )
                 confidence_levels.append(confidence * 100)
 
@@ -175,8 +161,7 @@ class LogLevelPredictor:
                 torch.cuda.empty_cache()
 
         logger.info(
-            "Batch inference complete. "
-            f"{len(predictions)} predictions made."
+            f"Batch inference complete. {len(predictions)} predictions made."
         )
         return predictions, confidence_levels
 
@@ -186,14 +171,14 @@ class LogLevelPredictor:
         logits: list,
         predicted_class_id: int,
         predicted_label: str,
-        confidence: float
+        confidence: float,
     ) -> None:
         """Log prediction details in a formatted way."""
-        logger.info("="*60)
+        logger.info("=" * 60)
         logger.info(f"INPUT LOG:   '{log_text}'")
         logger.info(f"RAW LOGITS:  {logits}")
         logger.info(f"PREDICTED ID:{predicted_class_id}")
         logger.info(
             f"FINAL LABEL: {predicted_label} (Confidence: {confidence:.2f}%)"
         )
-        logger.info("="*60)
+        logger.info("=" * 60)

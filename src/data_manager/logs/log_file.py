@@ -26,6 +26,7 @@ _SUPPORTED_SUFFIXES = (_JSON_SUFFIX, _LOG_SUFFIX)
 @dataclass
 class LogFile:
     """Collection of LogEntry objects loaded from one or more log files."""
+
     entries: List[LogEntry] = field(default_factory=list)
 
     @classmethod
@@ -199,9 +200,7 @@ class LogFile:
         logger.info(f"Successfully processed {files_processed} files.")
 
     def get_filtered_data(
-        self,
-        level: str = "",
-        include_unknown: bool = True
+        self, level: str = "", include_unknown: bool = True
     ) -> tuple[list[str], list[str]]:
         """Return (messages, levels) lists filtered by level.
 
