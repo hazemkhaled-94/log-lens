@@ -162,3 +162,5 @@ p20
 papers/
 documentation/
 resources/**
+# Local HF model-card drafts (uploaded to the Hub, not part of the repo)
+hf_card_*.md
