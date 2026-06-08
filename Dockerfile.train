@@ -1,0 +1,41 @@
+# Training image (GPU) — trains a log-lens classifier on YOUR dataset.
+#
+# No model is baked in: you mount a dataset and an output directory, and the
+# trained checkpoint lands in the mounted output volume. Requires the NVIDIA
+# Container Toolkit on the host. Match the CUDA tag below to your driver.
+#
+#   docker build -f Dockerfile.train -t log-lens-train .
+#   docker run --gpus all \
+#     -v "$PWD/data:/app/data" -v "$PWD/output:/app/output" \
+#     -e DATA_DIR=data -e TEST_DATA_DIR=data \
+#     -e OUTPUT_DIR=output -e LOGGING_DIR=output/logs \
+#     log-lens-train                      # or: ... log-lens-train log-lens evaluate
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu24.04
+
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    PATH="/opt/venv/bin:$PATH"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        python3.12 python3.12-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Isolated venv avoids the distro's externally-managed-python restriction.
+RUN python3.12 -m venv /opt/venv \
+    && pip install poetry
+
+WORKDIR /app
+
+# Install dependencies first for better layer caching.
+COPY pyproject.toml poetry.lock ./
+RUN poetry config virtualenvs.create false \
+    && poetry install --only main --no-root --no-interaction
+
+# Install the project itself.
+COPY src ./src
+RUN poetry install --only main --no-interaction
+
+# Trains on the mounted DATA_DIR; checkpoints go to the mounted OUTPUT_DIR.
+CMD ["log-lens", "train"]
