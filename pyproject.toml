@@ -5,26 +5,28 @@ description = "AI-powered platform for parsing, masking, classifying, and anomal
 authors = [
     { name = "Hazem Khaled", email = "hazem.mkhaled@icloud.com" }
 ]
-license = "MIT"
+license = "Apache-2.0"
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 
+[project.scripts]
+log-lens = "classifier.main:main"
+log-lens-cluster = "clusterer.main:main"
+log-lens-sample = "data_manager.logs.dataset_preprocessor:main"
+
 [tool.poetry]
 packages = [
-    {include = "configs", from = "src"},
     {include = "api", from = "src"},
-    {include = "logs", from = "src/data_manager"},
-    {include = "masker", from = "src/data_manager"},
     {include = "classifier", from = "src"},
     {include = "clusterer", from = "src"},
+    {include = "configs", from = "src"},
+    {include = "data_manager", from = "src"},
 ]
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.14"
 torch = "^2.10.0"
 torchmetrics = "^1.0.0"
-torchvision = "^0.25.0"
-torchaudio = "^2.0.0"
 transformers = "^5.2.0"
 accelerate = "^1.12.0"
 evaluate = "^0.4.0"
@@ -37,7 +39,6 @@ numpy = "^1.24.0"
 pandas = "^2.0.0"
 scikit-learn = "^1.8.0"
 matplotlib = "^3.7.0"
-jupyter = "^1.0.0"
 fastapi = "^0.135.0"
 uvicorn = "^0.41.0"
 python-dotenv = "^1.2.0"
@@ -47,9 +48,25 @@ protobuf = "^7.34.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
-black = "^26.0.0"
-flake8 = "^6.0.0"
+ruff = ">=0.6"
 mypy = "^1.4.0"
+pre-commit = "^4.0.0"
+
+[tool.ruff]
+line-length = 79
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+files = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
 
 [build-system]
 requires = ["poetry-core"]

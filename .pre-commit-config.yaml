@@ -3,14 +3,14 @@
 repos:
   - repo: local
     hooks:
-      - id: black
-        name: black
-        entry: poetry run black --line-length 79
+      - id: ruff
+        name: ruff (lint)
+        entry: poetry run ruff check --fix
         language: system
         types: [python]
-      - id: flake8
-        name: flake8
-        entry: poetry run flake8
+      - id: ruff-format
+        name: ruff (format)
+        entry: poetry run ruff format
         language: system
         types: [python]
       - id: mypy
