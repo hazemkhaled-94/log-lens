@@ -94,11 +94,11 @@ Override `--build-arg MODEL_REPO=<hf_repo_id>` to bake in a different model
 own checkpoint: `hf auth login` then
 `make publish-model MODEL_REPO=<user>/<name> MODEL_DIR=models/<base>/<run>`.
 
-### Training (GPU) — train on your own dataset
+### Training — train on your own dataset
 
-No model is baked in; mount your data and an output directory. Requires the
-NVIDIA Container Toolkit; match the CUDA tag in `Dockerfile.train` to your
-driver.
+No model is baked in; mount your data and an output directory. The image is
+device-flexible: pass `--gpus all` (with the NVIDIA Container Toolkit) to train
+on a CUDA GPU, or omit it to train on CPU.
 
 ```bash
 docker build -f Dockerfile.train -t log-lens-train .
@@ -109,7 +109,9 @@ docker run --gpus all \
   log-lens-train
 ```
 
-The trained checkpoint is written to the mounted `output/` volume.
+The trained checkpoint is written to the mounted `output/` volume. Apple MPS
+isn't available inside containers — to train on Apple Silicon, run natively
+(`poetry run log-lens train`), where the code auto-selects MPS / CUDA / CPU.
 
 ## Development
 

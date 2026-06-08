@@ -1,41 +1,39 @@
-# Training image (GPU) — trains a log-lens classifier on YOUR dataset.
+# Training image — trains a log-lens classifier on YOUR dataset.
 #
-# No model is baked in: you mount a dataset and an output directory, and the
-# trained checkpoint lands in the mounted output volume. Requires the NVIDIA
-# Container Toolkit on the host. Match the CUDA tag below to your driver.
+# Device-flexible: the bundled torch wheel is CUDA-capable, so pass
+# `--gpus all` (with the NVIDIA Container Toolkit) to train on a CUDA GPU;
+# omit it to train on CPU. No special base image is needed.
+#
+# Note: Apple MPS is NOT available inside containers (it's macOS-only and
+# isn't passed through to Linux containers). To train on Apple Silicon, run
+# natively instead:  poetry run log-lens train
 #
 #   docker build -f Dockerfile.train -t log-lens-train .
 #   docker run --gpus all \
 #     -v "$PWD/data:/app/data" -v "$PWD/output:/app/output" \
 #     -e DATA_DIR=data -e TEST_DATA_DIR=data \
 #     -e OUTPUT_DIR=output -e LOGGING_DIR=output/logs \
-#     log-lens-train                      # or: ... log-lens-train log-lens evaluate
-FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu24.04
+#     log-lens-train
+FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    DEBIAN_FRONTEND=noninteractive \
-    PATH="/opt/venv/bin:$PATH"
+    PIP_NO_CACHE_DIR=1
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        python3.12 python3.12-venv \
-    && rm -rf /var/lib/apt/lists/*
-
-# Isolated venv avoids the distro's externally-managed-python restriction.
-RUN python3.12 -m venv /opt/venv \
-    && pip install poetry
+RUN pip install poetry
 
 WORKDIR /app
 
-# Install dependencies first for better layer caching.
+# Install dependencies first for layer caching. This keeps the default
+# (CUDA-capable) torch wheel — unlike the CPU-only inference image.
 COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false \
     && poetry install --only main --no-root --no-interaction
 
-# Install the project itself.
+# Install the project itself (README.md is the pyproject-referenced readme).
 COPY src ./src
+COPY README.md ./
 RUN poetry install --only main --no-interaction
 
 # Trains on the mounted DATA_DIR; checkpoints go to the mounted OUTPUT_DIR.
+# Uses the GPU when run with --gpus all, otherwise CPU.
 CMD ["log-lens", "train"]

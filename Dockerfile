@@ -32,7 +32,9 @@ RUN poetry export --only main --without-hashes -f requirements.txt -o /tmp/req.t
     && pip install -r /tmp/req-notorch.txt
 
 # Install the project itself (entry points) without touching dependencies.
+# README.md is copied because pyproject references it as the package readme.
 COPY src ./src
+COPY README.md ./
 RUN pip install --no-deps .
 
 # Bake the trained model into the image. MODEL_REPO is a Hugging Face Hub
