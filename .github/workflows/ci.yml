@@ -30,8 +30,11 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction
 
-      - name: Lint (flake8)
-        run: poetry run flake8 src tests
+      - name: Lint (ruff)
+        run: poetry run ruff check src tests
+
+      - name: Format check (ruff)
+        run: poetry run ruff format --check src tests
 
       - name: Type check (mypy)
         run: poetry run mypy src
